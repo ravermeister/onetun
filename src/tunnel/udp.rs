@@ -8,7 +8,7 @@ use anyhow::Context;
 use bytes::Bytes;
 use priority_queue::double_priority_queue::DoublePriorityQueue;
 use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::rng;
 use tokio::net::UdpSocket;
 
 use crate::config::{PortForwardConfig, PortProtocol};
@@ -147,7 +147,7 @@ impl UdpPortPool {
     pub fn new() -> Self {
         let mut inner = UdpPortPoolInner::default();
         let mut ports: Vec<u16> = PORT_RANGE.collect();
-        ports.shuffle(&mut thread_rng());
+        ports.shuffle(&mut rng());
         ports
             .into_iter()
             .for_each(|p| inner.queue.push_back(p) as ());

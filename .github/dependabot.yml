@@ -5,7 +5,6 @@ version: 2
 updates:
   - package-ecosystem: "cargo"
     directory: "/"
-    target-branch: "fork/merged"
     schedule:
       interval: "weekly"
     rebase-strategy: "disabled"

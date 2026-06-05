@@ -37,7 +37,7 @@ impl WireGuardTunnel {
     /// Initialize a new WireGuard tunnel.
     pub async fn new(config: &Config, bus: Bus) -> anyhow::Result<Self> {
         let source_peer_ip = config.source_peer_ip;
-        let peer = Mutex::new(Box::new(Self::create_tunnel(config)?));
+        let peer = Mutex::new(Box::new(Self::create_tunnel(config)));
         let endpoint = config.endpoint_addr;
         let udp = UdpSocket::bind(config.endpoint_bind_addr)
             .await
@@ -231,10 +231,9 @@ impl WireGuardTunnel {
         }
     }
 
-    fn create_tunnel(config: &Config) -> anyhow::Result<Tunn> {
+    fn create_tunnel(config: &Config) -> Tunn {
         let private = config.private_key.as_ref().clone();
         let public = *config.endpoint_public_key.as_ref();
-
         Tunn::new(
             private,
             public,
@@ -243,8 +242,6 @@ impl WireGuardTunnel {
             0,
             None,
         )
-        .map_err(|s| anyhow::anyhow!("{}", s))
-        .context("Failed to initialize boringtun Tunn")
     }
 
     /// Determine the inner protocol of the incoming IP packet (TCP/UDP).

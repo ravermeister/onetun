@@ -139,7 +139,7 @@ impl VirtualInterfacePoll for UdpVirtualInterface {
                     (None, _) => tokio::time::sleep(Duration::ZERO),
                     (Some(until), _) => tokio::time::sleep_until(until),
                 } => {
-                    let loop_start = smoltcp::time::Instant::now();
+                    let loop_start = Instant::now();
 
                     if iface.poll(loop_start, &mut device, &mut self.sockets) == PollResult::SocketStateChanged {
                         log::trace!("UDP virtual interface polled some packets to be processed");

@@ -21,7 +21,7 @@ use std::{
 
 const MAX_PACKET: usize = 65536;
 
-/// A virtual interface for proxying Layer 7 data to Layer 3 packets, and vice-versa.
+/// A virtual interface for proxying Layer 7 data to Layer 3 packets, and vice versa.
 pub struct TcpVirtualInterface {
     source_peer_ip: IpAddr,
     port_forwards: Vec<PortForwardConfig>,
@@ -126,7 +126,7 @@ impl VirtualInterfacePoll for TcpVirtualInterface {
                     (None, _) => tokio::time::sleep(Duration::ZERO),
                     (Some(until), _) => tokio::time::sleep_until(until),
                 } => {
-                    let loop_start = smoltcp::time::Instant::now();
+                    let loop_start = Instant::now();
 
                     // Find closed sockets
                     port_client_handle_map.retain(|virtual_port, client_handle| {

@@ -6,6 +6,7 @@ use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 use std::sync::Arc;
 
 use anyhow::{bail, Context};
+use base64::{engine::general_purpose, Engine};
 pub use boringtun::x25519::{PublicKey, StaticSecret};
 
 const DEFAULT_PORT_FORWARD_SOURCE: &str = "127.0.0.1";
@@ -302,7 +303,9 @@ fn parse_ip(s: Option<&String>) -> anyhow::Result<IpAddr> {
 }
 
 fn parse_private_key(s: &str) -> anyhow::Result<StaticSecret> {
-    let decoded = base64::decode(s).context("Failed to decode private key")?;
+    let decoded = general_purpose::STANDARD
+        .decode(s)
+        .context("Failed to decode private key")?;
     if let Ok::<[u8; 32], _>(bytes) = decoded.try_into() {
         Ok(StaticSecret::from(bytes))
     } else {
@@ -312,7 +315,9 @@ fn parse_private_key(s: &str) -> anyhow::Result<StaticSecret> {
 
 fn parse_public_key(s: Option<&String>) -> anyhow::Result<PublicKey> {
     let encoded = s.context("Missing public key")?;
-    let decoded = base64::decode(encoded).context("Failed to decode public key")?;
+    let decoded = general_purpose::STANDARD
+        .decode(encoded)
+        .context("Failed to decode public key")?;
     if let Ok::<[u8; 32], _>(bytes) = decoded.try_into() {
         Ok(PublicKey::from(bytes))
     } else {
@@ -322,7 +327,9 @@ fn parse_public_key(s: Option<&String>) -> anyhow::Result<PublicKey> {
 
 fn parse_preshared_key(s: Option<&String>) -> anyhow::Result<Option<[u8; 32]>> {
     if let Some(s) = s {
-        let decoded = base64::decode(s).context("Failed to decode preshared key")?;
+        let decoded = general_purpose::STANDARD
+            .decode(s)
+            .context("Failed to decode preshared key")?;
         if let Ok::<[u8; 32], _>(bytes) = decoded.try_into() {
             Ok(Some(bytes))
         } else {
@@ -503,7 +510,7 @@ impl PortForwardConfig {
         }
         .context("Failed to parse protocols")?;
 
-        // Returns an config for each protocol
+        // Returns a config for each protocol
         Ok(protocols
             .into_iter()
             .map(|protocol| Self {

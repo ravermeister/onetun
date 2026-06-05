@@ -4,7 +4,7 @@ version = "0.3.10"
 edition = "2021"
 license = "MIT"
 description = "A cross-platform, user-space WireGuard port-forwarder that requires no system network configurations."
-authors = ["Aram Peres <aram.peres@gmail.com>"]
+authors = ["Aram Peres <aram.peres@gmail.com>", "Jonny Rimkus <jonny@rimkus.it>"]
 repository = "https://github.com/aramperes/onetun"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

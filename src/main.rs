@@ -32,5 +32,6 @@ fn init_logger(config: &onetun::config::Config) -> anyhow::Result<()> {
 
     let mut builder = pretty_env_logger::formatted_timed_builder();
     builder.parse_filters(&config.log);
+    builder.target(pretty_env_logger::env_logger::Target::Stdout);
     builder.try_init().context("Failed to initialize logger")
 }

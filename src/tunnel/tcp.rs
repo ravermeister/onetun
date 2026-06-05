@@ -5,8 +5,8 @@ use std::time::Duration;
 
 use anyhow::Context;
 use bytes::BytesMut;
-use rand::seq::SliceRandom;
 use rand::rng;
+use rand::seq::SliceRandom;
 use tokio::io::AsyncWriteExt;
 use tokio::net::{TcpListener, TcpStream};
 
@@ -138,7 +138,7 @@ async fn handle_tcp_proxy_connection(
                                     debug!("[{}] Sent {} (expected {}) bytes to local client", virtual_port, written, expected);
                                     sent += written;
                                     if sent < expected {
-                                        debug!("[{}] Will try to resend remaining {} bytes to local client", virtual_port, (expected - written));
+                                        debug!("[{}] Will try to resend remaining {} bytes to local client", virtual_port, expected - written);
                                     }
                                 },
                                 Err(e) => {
@@ -178,9 +178,7 @@ impl TcpPortPool {
         let mut inner = TcpPortPoolInner::default();
         let mut ports: Vec<u16> = PORT_RANGE.collect();
         ports.shuffle(&mut rng());
-        ports
-            .into_iter()
-            .for_each(|p| inner.queue.push_back(p) as ());
+        ports.into_iter().for_each(|p| inner.queue.push_back(p));
         Self {
             inner: Arc::new(tokio::sync::RwLock::new(inner)),
         }

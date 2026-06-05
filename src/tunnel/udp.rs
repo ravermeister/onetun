@@ -7,8 +7,8 @@ use std::time::Instant;
 use anyhow::Context;
 use bytes::Bytes;
 use priority_queue::double_priority_queue::DoublePriorityQueue;
-use rand::seq::SliceRandom;
 use rand::rng;
+use rand::seq::SliceRandom;
 use tokio::net::UdpSocket;
 
 use crate::config::{PortForwardConfig, PortProtocol};
@@ -77,7 +77,7 @@ pub async fn udp_proxy_server(
                                     debug!("[{}] Sent {} (expected {}) bytes to local client", virtual_port, written, expected);
                                     sent += written;
                                     if sent < expected {
-                                        debug!("[{}] Will try to resend remaining {} bytes to local client", virtual_port, (expected - written));
+                                        debug!("[{}] Will try to resend remaining {} bytes to local client", virtual_port, expected - written);
                                     }
                                 },
                                 Err(e) => {
@@ -148,9 +148,7 @@ impl UdpPortPool {
         let mut inner = UdpPortPoolInner::default();
         let mut ports: Vec<u16> = PORT_RANGE.collect();
         ports.shuffle(&mut rng());
-        ports
-            .into_iter()
-            .for_each(|p| inner.queue.push_back(p) as ());
+        ports.into_iter().for_each(|p| inner.queue.push_back(p));
         Self {
             inner: Arc::new(tokio::sync::RwLock::new(inner)),
         }
@@ -158,7 +156,7 @@ impl UdpPortPool {
 
     /// Requests a free port from the pool. An error is returned if none is available (exhausted max capacity).
     pub async fn next(&self, peer_addr: SocketAddr) -> anyhow::Result<VirtualPort> {
-        // A port found to be reused. This is outside of the block because the read lock cannot be upgraded to a write lock.
+        // A port found to be reused. This is outside the block because the read lock cannot be upgraded to a write lock.
         let mut port_reuse: Option<u16> = None;
 
         {
@@ -244,7 +242,7 @@ impl UdpPortPool {
 struct UdpPortPoolInner {
     /// Remaining ports in the pool.
     queue: VecDeque<u16>,
-    /// The port assigned by peer IP/port. This is used to lookup an existing virtual port
+    /// The port assigned by peer IP/port. This is used to look up an existing virtual port
     /// for an incoming UDP datagram.
     port_by_peer_addr: HashMap<SocketAddr, u16>,
     /// The socket address assigned to a peer IP/port. This is used to send a UDP datagram to

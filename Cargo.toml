@@ -54,3 +54,10 @@ bin = ["clap", "pretty_env_logger", "pcap", "tokio/rt-multi-thread"]
 
 [lib]
 name = "onetun"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+

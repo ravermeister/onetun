@@ -39,10 +39,10 @@ pub async fn udp_proxy_server(
         .await
         .context("Failed to bind on UDP proxy address")?;
 
-    let mut buffer = [0u8; MAX_PACKET];
+    let mut buffer = vec![0u8; MAX_PACKET];
     loop {
         tokio::select! {
-            to_send_result = next_udp_datagram(&socket, &mut buffer, port_pool.clone()) => {
+            to_send_result = next_udp_datagram(&socket, &mut buffer[..], port_pool.clone()) => {
                 match to_send_result {
                     Ok(Some((port, data))) => {
                         endpoint.send(Event::LocalData(port_forward, port, data));

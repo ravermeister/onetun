@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Context;
-use bytes::BytesMut;
+use bytes::{Bytes, BytesMut};
 use rand::rng;
 use rand::seq::SliceRandom;
 use tokio::io::AsyncWriteExt;
@@ -90,8 +90,8 @@ async fn handle_tcp_proxy_connection(
                     Ok(_) => {
                         match socket.try_read_buf(&mut buffer) {
                             Ok(size) if size > 0 => {
-                                let data = Vec::from(&buffer[..size]);
-                                endpoint.send(Event::LocalData(port_forward, virtual_port, data.into()));
+                                let data = Bytes::copy_from_slice(&buffer[..size]);
+                                endpoint.send(Event::LocalData(port_forward, virtual_port, data));
                                 // Reset buffer
                                 buffer.clear();
                             }

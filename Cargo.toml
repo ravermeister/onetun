@@ -57,7 +57,10 @@ name = "onetun"
 
 [profile.release]
 opt-level = 3
-lto = true
-codegen-units = 1
+# LTO and a single codegen unit can cause very high memory usage when compiling
+# large dependencies (e.g. tokio). Use safer defaults to avoid OOM on smaller dev
+# machines while keeping optimizations.
+lto = false
+codegen-units = 4
 strip = true
 

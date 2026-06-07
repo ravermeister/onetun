@@ -35,6 +35,8 @@ base64 = "0.22.1"
 # forward boringtuns tracing events to log
 tracing = { version = "0.1", default-features = false, features = ["log"] }
 
+# Human-friendly UTC timestamps for logging
+chrono = "0.4"
 # bin-only dependencies
 clap = {
     version = "4.6.1",

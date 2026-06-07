@@ -18,7 +18,7 @@ pub async fn port_forward(
     wg: Arc<WireGuardTunnel>,
     bus: Bus,
 ) -> anyhow::Result<()> {
-    info!(
+    debug!(
         "Tunneling {} [{}]->[{}] (via [{}] as peer {})",
         port_forward.protocol,
         port_forward.source,

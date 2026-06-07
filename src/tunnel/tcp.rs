@@ -50,7 +50,7 @@ pub async fn tcp_proxy_server(
             }
         };
 
-        info!("[{}] Incoming connection from {}", virtual_port, peer_addr);
+        debug!("[{}] Incoming connection from {}", virtual_port, peer_addr);
 
         let bus = bus.clone();
         tokio::spawn(async move {
@@ -62,8 +62,8 @@ pub async fn tcp_proxy_server(
                     "[{}] Connection dropped un-gracefully: {:?}",
                     virtual_port, e
                 );
-            } else {
-                info!("[{}] Connection closed by client", virtual_port);
+                } else {
+                debug!("[{}] Connection closed by client", virtual_port);
             }
 
             tokio::time::sleep(Duration::from_millis(100)).await; // Make sure the other tasks have time to process the event

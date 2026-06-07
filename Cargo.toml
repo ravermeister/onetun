@@ -73,3 +73,10 @@ codegen-units = 4
 # cargo build --release -p onetun --profile release-fast
 # OR: CARGO_PROFILE_RELEASE_FAST_OPT_LEVEL=3 cargo build --release
 
+[profile.release-minimal]
+inherits = "release"
+opt-level = 1
+codegen-units = 256
+# Use this profile on systems with severe RAM constraints (< 2GB):
+# cargo build -p onetun --profile release-minimal
+

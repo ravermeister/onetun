@@ -56,11 +56,20 @@ bin = ["clap", "pretty_env_logger", "pcap", "tokio/rt-multi-thread"]
 name = "onetun"
 
 [profile.release]
-opt-level = 3
-# LTO and a single codegen unit can cause very high memory usage when compiling
-# large dependencies (e.g. tokio). Use safer defaults to avoid OOM on smaller dev
-# machines while keeping optimizations.
+opt-level = 2
+# Conservative compilation settings for RAM-constrained systems.
+# opt-level=2 provides good optimization without excessive memory use.
+# Avoiding LTO, high codegen-units, and single-unit compilation to prevent OOM.
 lto = false
-codegen-units = 4
+codegen-units = 16
 strip = true
+split-debuginfo = "packed"
+
+[profile.release-fast]
+inherits = "release"
+opt-level = 3
+codegen-units = 4
+# Use this profile on systems with abundant RAM:
+# cargo build --release -p onetun --profile release-fast
+# OR: CARGO_PROFILE_RELEASE_FAST_OPT_LEVEL=3 cargo build --release
 

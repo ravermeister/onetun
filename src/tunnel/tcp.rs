@@ -62,7 +62,7 @@ pub async fn tcp_proxy_server(
                     "[{}] Connection dropped un-gracefully: {:?}",
                     virtual_port, e
                 );
-                } else {
+            } else {
                 debug!("[{}] Connection closed by client", virtual_port);
             }
 

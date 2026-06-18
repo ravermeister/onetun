@@ -42,7 +42,9 @@ fn init_logger(config: &onetun::config::Config) -> anyhow::Result<()> {
         use std::io::Write;
 
         // UTC timestamp with millisecond precision
-        let ts = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let ts = chrono::Utc::now()
+            .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+            .to_string();
 
         // map INFO labels to "DEBUG" per your request, keep other levels as-is
         let level_label = if record.level() == log::Level::Info {

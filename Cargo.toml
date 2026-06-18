@@ -38,7 +38,8 @@ tracing = { version = "0.1", default-features = false, features = ["log"] }
 # Human-friendly UTC timestamps for logging
 chrono = "0.4"
 # bin-only dependencies
-clap = {
+clap = 
+{
     version = "4.6.1",
     default-features = false,
     features = ["suggestions", "std", "env", "help", "wrap_help"],

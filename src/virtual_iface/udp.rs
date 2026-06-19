@@ -147,22 +147,21 @@ impl VirtualInterfacePoll for UdpVirtualInterface {
 
                     for (virtual_port, client_handle) in port_client_handle_map.iter() {
                         let client_socket = self.sockets.get_mut::<udp::Socket>(*client_handle);
-                        if client_socket.can_send() {
-                            if let Some(send_queue) = send_queue.get_mut(virtual_port) {
-                                let to_transfer = send_queue.pop_front();
-                                if let Some((port_forward, data)) = to_transfer {
-                                    client_socket
-                                        .send_slice(
-                                            &data,
-                                            UdpMetadata::from(port_forward.destination),
-                                        )
-                                        .unwrap_or_else(|e| {
-                                            error!(
-                                                "[{}] Failed to send data to virtual server: {:?}",
-                                                virtual_port, e
-                                            );
-                                        });
-                                }
+                        if client_socket.can_send()
+                            && let Some(send_queue) = send_queue.get_mut(virtual_port) {
+                            let to_transfer = send_queue.pop_front();
+                            if let Some((port_forward, data)) = to_transfer {
+                                client_socket
+                                    .send_slice(
+                                        &data,
+                                        UdpMetadata::from(port_forward.destination),
+                                    )
+                                    .unwrap_or_else(|e| {
+                                        error!(
+                                            "[{}] Failed to send data to virtual server: {:?}",
+                                            virtual_port, e
+                                        );
+                                    });
                             }
                         }
                         if client_socket.can_recv() {

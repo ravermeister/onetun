@@ -148,28 +148,27 @@ impl VirtualInterfacePoll for TcpVirtualInterface {
 
                     for (virtual_port, client_handle) in port_client_handle_map.iter() {
                         let client_socket = self.sockets.get_mut::<tcp::Socket>(*client_handle);
-                        if client_socket.can_send() {
-                            if let Some(send_queue) = send_queue.get_mut(virtual_port) {
-                                let to_transfer = send_queue.pop_front();
-                                if let Some(to_transfer_slice) = to_transfer.as_deref() {
-                                    let total = to_transfer_slice.len();
-                                    match client_socket.send_slice(to_transfer_slice) {
-                                        Ok(sent) => {
-                                            if sent < total {
-                                                // Sometimes only a subset is sent, so the rest needs to be sent on the next poll
-                                                let tx_extra = Vec::from(&to_transfer_slice[sent..total]);
-                                                send_queue.push_front(tx_extra.into());
-                                            }
-                                        }
-                                        Err(e) => {
-                                            error!(
-                                                "Failed to send slice via virtual client socket: {:?}", e
-                                            );
+                        if client_socket.can_send()
+                            && let Some(send_queue) = send_queue.get_mut(virtual_port) {
+                            let to_transfer = send_queue.pop_front();
+                            if let Some(to_transfer_slice) = to_transfer.as_deref() {
+                                let total = to_transfer_slice.len();
+                                match client_socket.send_slice(to_transfer_slice) {
+                                    Ok(sent) => {
+                                        if sent < total {
+                                            // Sometimes only a subset is sent, so the rest needs to be sent on the next poll
+                                            let tx_extra = Vec::from(&to_transfer_slice[sent..total]);
+                                            send_queue.push_front(tx_extra.into());
                                         }
                                     }
-                                } else if client_socket.state() == tcp::State::CloseWait {
-                                    client_socket.close();
+                                    Err(e) => {
+                                        error!(
+                                            "Failed to send slice via virtual client socket: {:?}", e
+                                        );
+                                    }
                                 }
+                            } else if client_socket.state() == tcp::State::CloseWait {
+                                client_socket.close();
                             }
                         }
                         if client_socket.can_recv() {

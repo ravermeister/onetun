@@ -1,6 +1,6 @@
+use crate::Bus;
 use crate::config::PortProtocol;
 use crate::events::{BusSender, Event};
-use crate::Bus;
 use bytes::{BufMut, Bytes, BytesMut};
 use smoltcp::{
     phy::{DeviceCapabilities, Medium},

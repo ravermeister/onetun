@@ -8,11 +8,11 @@ use std::collections::HashSet;
 #[cfg(feature = "bin")]
 use std::fs::read_to_string;
 
-#[cfg(feature = "bin")]
-use anyhow::bail;
 use anyhow::Context;
 #[cfg(feature = "bin")]
-use base64::{engine::general_purpose, Engine};
+use anyhow::bail;
+#[cfg(feature = "bin")]
+use base64::{Engine, engine::general_purpose};
 pub use boringtun::x25519::{PublicKey, StaticSecret};
 
 #[cfg(any(feature = "bin", test))]
@@ -210,7 +210,10 @@ impl Config {
             .collect();
         for port_forward in remote_port_forwards.iter_mut() {
             if port_forward.source.ip() != source_peer_ip {
-                bail!("Remote port forward config <src_host> must match --source-peer-ip ({}), or be omitted.", source_peer_ip);
+                bail!(
+                    "Remote port forward config <src_host> must match --source-peer-ip ({}), or be omitted.",
+                    source_peer_ip
+                );
             }
             port_forward.source = SocketAddr::from((source_peer_ip, port_forward.source.port()));
             port_forward.remote = true;

@@ -190,7 +190,10 @@ impl WireGuardTunnel {
                     match self.udp.send_to(packet, self.endpoint).await {
                         Ok(_) => {}
                         Err(e) => {
-                            error!("Failed to send decapsulation-instructed packet to WireGuard endpoint: {:?}", e);
+                            error!(
+                                "Failed to send decapsulation-instructed packet to WireGuard endpoint: {:?}",
+                                e
+                            );
                             continue;
                         }
                     };
@@ -202,7 +205,10 @@ impl WireGuardTunnel {
                                 match self.udp.send_to(packet, self.endpoint).await {
                                     Ok(_) => {}
                                     Err(e) => {
-                                        error!("Failed to send decapsulation-instructed packet to WireGuard endpoint: {:?}", e);
+                                        error!(
+                                            "Failed to send decapsulation-instructed packet to WireGuard endpoint: {:?}",
+                                            e
+                                        );
                                         break;
                                     }
                                 };

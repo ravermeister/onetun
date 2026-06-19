@@ -10,9 +10,9 @@ use crate::events::Bus;
 use crate::tunnel::tcp::TcpPortPool;
 use crate::tunnel::udp::UdpPortPool;
 use crate::virtual_device::VirtualIpDevice;
+use crate::virtual_iface::VirtualInterfacePoll;
 use crate::virtual_iface::tcp::TcpVirtualInterface;
 use crate::virtual_iface::udp::UdpVirtualInterface;
-use crate::virtual_iface::VirtualInterfacePoll;
 use crate::wg::WireGuardTunnel;
 
 pub mod config;

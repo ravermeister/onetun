@@ -1,11 +1,11 @@
 use bytes::Bytes;
 use std::fmt::{Display, Formatter};
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 
+use crate::PortProtocol;
 use crate::config::PortForwardConfig;
 use crate::virtual_iface::VirtualPort;
-use crate::PortProtocol;
 
 /// Events that go on the bus between the local server, smoltcp, and WireGuard.
 #[derive(Debug, Clone)]

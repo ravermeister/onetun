@@ -1,5 +1,5 @@
-use crate::events::Event;
 use crate::Bus;
+use crate::events::Event;
 use anyhow::Context;
 use smoltcp::time::Instant;
 use tokio::fs::File;

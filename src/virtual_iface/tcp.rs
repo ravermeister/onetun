@@ -1,8 +1,8 @@
+use crate::Bus;
 use crate::config::{PortForwardConfig, PortProtocol};
 use crate::events::Event;
 use crate::virtual_device::VirtualIpDevice;
 use crate::virtual_iface::{VirtualInterfacePoll, VirtualPort};
-use crate::Bus;
 use anyhow::Context;
 use async_trait::async_trait;
 use bytes::Bytes;

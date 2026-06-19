@@ -1,8 +1,8 @@
 pub mod tcp;
 pub mod udp;
 
-use crate::config::PortProtocol;
 use crate::VirtualIpDevice;
+use crate::config::PortProtocol;
 use async_trait::async_trait;
 use std::fmt::{Display, Formatter};
 

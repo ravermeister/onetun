@@ -1,105 +1,106 @@
-on: [push, pull_request]
-
 name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4  # Aktualisiert auf die moderne, stabile Version
+        uses: actions/checkout@v5
 
       - name: Install toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1  # Korrigierter Name (actions-rust-lang statt rust-lang)
-        with:
-          toolchain: ${{ matrix.rust }}
-          override: true
+        run: |
+          rustup update ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
 
       - name: Run cargo check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
+        run: cargo check --locked
 
       - name: Run cargo check without default features
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --no-default-features
+        run: cargo check --no-default-features --locked
 
   test:
     name: Test Suite
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          override: true
+        run: |
+          rustup update ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
 
       - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+        run: cargo test --locked
+
+      - name: Run cargo test without default features
+        run: cargo test --no-default-features --locked
 
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          override: true
+        run: |
+          rustup update ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
 
       - name: Install rustfmt
         run: rustup component add rustfmt
 
       - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt --all -- --check
 
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          override: true
+        run: |
+          rustup update ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
 
       - name: Install clippy
         run: rustup component add clippy
 
       - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+        run: cargo clippy --locked -- -D warnings

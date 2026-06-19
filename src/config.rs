@@ -1,14 +1,21 @@
-use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
-use std::fs::read_to_string;
 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 use std::sync::Arc;
 
-use anyhow::{bail, Context};
+#[cfg(feature = "bin")]
+use std::collections::HashSet;
+#[cfg(feature = "bin")]
+use std::fs::read_to_string;
+
+#[cfg(feature = "bin")]
+use anyhow::bail;
+use anyhow::Context;
+#[cfg(feature = "bin")]
 use base64::{engine::general_purpose, Engine};
 pub use boringtun::x25519::{PublicKey, StaticSecret};
 
+#[cfg(any(feature = "bin", test))]
 const DEFAULT_PORT_FORWARD_SOURCE: &str = "127.0.0.1";
 
 #[derive(Clone)]
@@ -287,6 +294,7 @@ impl Config {
     }
 }
 
+#[cfg(feature = "bin")]
 fn parse_addr<T: AsRef<str>>(s: Option<T>) -> anyhow::Result<SocketAddr> {
     s.context("Missing address")?
         .as_ref()
@@ -296,12 +304,14 @@ fn parse_addr<T: AsRef<str>>(s: Option<T>) -> anyhow::Result<SocketAddr> {
         .context("Could not lookup address")
 }
 
+#[cfg(feature = "bin")]
 fn parse_ip(s: Option<&String>) -> anyhow::Result<IpAddr> {
     s.context("Missing IP address")?
         .parse::<IpAddr>()
         .context("Invalid IP address")
 }
 
+#[cfg(feature = "bin")]
 fn parse_private_key(s: &str) -> anyhow::Result<StaticSecret> {
     let decoded = general_purpose::STANDARD
         .decode(s)
@@ -313,6 +323,7 @@ fn parse_private_key(s: &str) -> anyhow::Result<StaticSecret> {
     }
 }
 
+#[cfg(feature = "bin")]
 fn parse_public_key(s: Option<&String>) -> anyhow::Result<PublicKey> {
     let encoded = s.context("Missing public key")?;
     let decoded = general_purpose::STANDARD
@@ -325,6 +336,7 @@ fn parse_public_key(s: Option<&String>) -> anyhow::Result<PublicKey> {
     }
 }
 
+#[cfg(feature = "bin")]
 fn parse_preshared_key(s: Option<&String>) -> anyhow::Result<Option<[u8; 32]>> {
     if let Some(s) = s {
         let decoded = general_purpose::STANDARD
@@ -340,6 +352,7 @@ fn parse_preshared_key(s: Option<&String>) -> anyhow::Result<Option<[u8; 32]>> {
     }
 }
 
+#[cfg(feature = "bin")]
 fn parse_keep_alive(s: Option<&String>) -> anyhow::Result<Option<u16>> {
     if let Some(s) = s {
         let parsed: u16 = s.parse().with_context(|| {
@@ -354,11 +367,12 @@ fn parse_keep_alive(s: Option<&String>) -> anyhow::Result<Option<u16>> {
     }
 }
 
+#[cfg(feature = "bin")]
 fn parse_mtu(s: Option<&String>) -> anyhow::Result<usize> {
     s.context("Missing MTU")?.parse().context("Invalid MTU")
 }
 
-#[cfg(unix)]
+#[cfg(all(feature = "bin", unix))]
 fn is_file_insecurely_readable(path: &String) -> Option<(bool, bool)> {
     use std::fs::File;
     use std::os::unix::fs::MetadataExt;
@@ -367,7 +381,7 @@ fn is_file_insecurely_readable(path: &String) -> Option<(bool, bool)> {
     Some((mode & 0o40 > 0, mode & 0o4 > 0))
 }
 
-#[cfg(not(unix))]
+#[cfg(all(feature = "bin", not(unix)))]
 fn is_file_insecurely_readable(_path: &String) -> Option<(bool, bool)> {
     // No good way to determine permissions on non-Unix target
     None

@@ -6,8 +6,8 @@ A cross-platform, user-space WireGuard port-forwarder that requires **no root-ac
 
 [![crates.io](https://img.shields.io/crates/v/onetun.svg)](https://crates.io/crates/onetun)
 [![MIT licensed](https://img.shields.io/crates/l/onetun.svg)](./LICENSE)
-[![Build status](https://github.com/aramperes/onetun/actions/workflows/build.yml/badge.svg)](https://github.com/aramperes/onetun/actions)
-[![Latest Release](https://img.shields.io/github/v/tag/aramperes/onetun?label=release)](https://github.com/aramperes/onetun/releases/latest)
+[![Build status](https://github.com/ravermeister/onetun/actions/workflows/build.yml/badge.svg)](https://github.com/ravermeister/onetun/actions)
+[![Latest Release](https://img.shields.io/github/v/tag/ravermeister/onetun?label=release)](https://github.com/ravermeister/onetun/releases/latest)
 
 ## Use-case
 
@@ -28,19 +28,19 @@ cargo install onetun
 ```
 
 You can also download the binary for Windows, macOS (Apple Silicon), and Linux (amd64, arm64) from
-the [Releases](https://github.com/aramperes/onetun/releases) page.
+the [Releases](https://github.com/ravermeister/onetun/releases) page.
 
-You can also run onetun using [Docker](https://hub.docker.com/r/aramperes/onetun):
+You can also run onetun using [Docker](https://hub.docker.com/r/ravermeister/onetun):
 
 ```shell
-docker run --rm --name onetun --user 1000 -p 8080:8080 aramperes/onetun \
+docker run --rm --name onetun --user 1000 -p 8080:8080 ravermeister/onetun \
     0.0.0.0:8080:192.168.4.2:8080 [...options...]
 ```
 
 You can also build onetun locally, using Rust ≥1.80.0:
 
 ```shell
-git clone https://github.com/aramperes/onetun && cd onetun
+git clone https://github.com/ravermeister/onetun && cd onetun
 cargo build --release
 ./target/release/onetun
 ```

@@ -23,7 +23,7 @@ jobs:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install toolchain
         run: |
@@ -46,7 +46,7 @@ jobs:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install toolchain
         run: |
@@ -69,7 +69,7 @@ jobs:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install toolchain
         run: |
@@ -92,7 +92,7 @@ jobs:
           - stable
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install toolchain
         run: |

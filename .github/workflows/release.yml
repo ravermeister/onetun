@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -23,7 +23,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
         with:
-          images: aramperes/onetun
+          images: ravermeister/onetun
 
       - name: Build and push Docker image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
@@ -75,17 +75,24 @@ jobs:
       RUST_BACKTRACE: 1
     strategy:
       matrix:
-        build: [ linux-amd64, linux-aarch64, macos-aarch64, windows ]
+        build: [ linux-amd64, linux-arm64, linux-armv7, macos-aarch64, windows ]
         include:
           - build: linux-amd64
             os: ubuntu-latest
             rust: stable
             target: x86_64-unknown-linux-musl
-            cross: true
-          - build: linux-aarch64
+            cross: false
+          # Linux ARM targets require cross on GitHub-hosted runners.
+          - build: linux-arm64
             os: ubuntu-latest
             rust: stable
             target: aarch64-unknown-linux-musl
+            cross: true
+          # Raspberry Pi 32-bit (ARMv7) requires cross on GitHub-hosted runners.
+          - build: linux-armv7
+            os: ubuntu-latest
+            rust: stable
+            target: armv7-unknown-linux-musleabihf
             cross: true
           - build: macos-aarch64
             os: macos-latest
@@ -93,14 +100,14 @@ jobs:
             target: aarch64-apple-darwin
             cross: false
           - build: windows
-            os: windows-2019
+            os: windows-latest
             rust: stable
             target: x86_64-pc-windows-msvc
             cross: false
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -121,7 +128,7 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Get release download URL
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifacts
           path: artifacts
@@ -137,7 +144,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.cross }}" = "true" ]; then
-            cargo install cross
+            cargo install cross --locked
             cross build --release --target ${{ matrix.target }}
           else
             cargo build --release --target ${{ matrix.target }}

@@ -3,6 +3,10 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
 jobs:
   docker-push:
     name: docker-push
@@ -37,34 +41,22 @@ jobs:
     name: create-release
     runs-on: ubuntu-latest
     steps:
-      - name: Create artifacts directory
-        run: mkdir artifacts
-
       - name: Get the release version from the tag
-        if: env.VERSION == ''
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "version is: ${{ env.VERSION }}"
+          echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          echo "version is: ${GITHUB_REF_NAME}"
+
       - name: Create GitHub release
-        id: release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.VERSION }}
-          release_name: ${{ env.VERSION }}
-
-      - name: Save release upload URL to artifact
-        run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
-
-      - name: Save version number to artifact
-        run: echo "${{ env.VERSION }}" > artifacts/release-version
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: artifacts
-          path: artifacts
+        run: |
+          if gh release view "${VERSION}" >/dev/null 2>&1; then
+            echo "release ${VERSION} already exists"
+          else
+            gh release create "${VERSION}" \
+              --title "${VERSION}" \
+              --verify-tag
+          fi
 
   build-release:
     name: build-release
@@ -120,25 +112,16 @@ jobs:
         run: |
           .github/ci/macos-install-packages
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          profile: minimal
-          override: true
-          target: ${{ matrix.target }}
+        run: |
+          rustup update ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
+          rustup target add ${{ matrix.target }}
 
-      - name: Get release download URL
-        uses: actions/download-artifact@v8
-        with:
-          name: artifacts
-          path: artifacts
-
-      - name: Set release upload URL
+      - name: Set release version
         shell: bash
         run: |
-          release_upload_url="$(cat artifacts/release-upload-url)"
-          echo "RELEASE_UPLOAD_URL=$release_upload_url" >> $GITHUB_ENV
-          echo "release upload url: $release_upload_url"
+          echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          echo "version is: ${GITHUB_REF_NAME}"
 
       - name: Build onetun binary
         shell: bash
@@ -163,11 +146,8 @@ jobs:
           fi
 
       - name: Upload release archive
-        uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: ci/assets/${{ env.ASSET }}
-          asset_name: ${{ env.ASSET }}
-          asset_content_type: application/octet-stream
+        shell: bash
+        run: |
+          gh release upload "${VERSION}" "ci/assets/${ASSET}" --clobber

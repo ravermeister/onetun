@@ -48,12 +48,14 @@ jobs:
 
       - name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view "${VERSION}" >/dev/null 2>&1; then
+          if gh release view "${VERSION}" --repo "${GH_REPO}" >/dev/null 2>&1; then
             echo "release ${VERSION} already exists"
           else
             gh release create "${VERSION}" \
+              --repo "${GH_REPO}" \
               --title "${VERSION}" \
               --verify-tag
           fi
@@ -147,7 +149,8 @@ jobs:
 
       - name: Upload release archive
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
-          gh release upload "${VERSION}" "ci/assets/${ASSET}" --clobber
+          gh release upload "${VERSION}" "ci/assets/${ASSET}" --repo "${GH_REPO}" --clobber

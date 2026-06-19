@@ -60,7 +60,7 @@ fn init_logger(config: &onetun::config::Config) -> anyhow::Result<()> {
         } else {
             // non-error: write into the provided buffer (goes to stdout)
             writeln!(buf, "{} {:<5} - {}", ts, level_label, record.args())
-                .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "format error"))
+                .map_err(|_| std::io::Error::other("format error"))
         }
     });
 

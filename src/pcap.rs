@@ -90,7 +90,7 @@ pub async fn capture(pcap_file: String, bus: Bus) -> anyhow::Result<()> {
         .await
         .context("Failed to write global header to pcap writer")?;
 
-    debug!("Capturing WireGuard IP packets to {}", &pcap_file);
+    debug!("Capturing WireGuard IP packets to {}", pcap_file);
     loop {
         match endpoint.recv().await {
             Event::InboundInternetPacket(_proto, ip) => {

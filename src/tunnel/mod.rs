@@ -23,7 +23,7 @@ pub async fn port_forward(
         port_forward.protocol,
         port_forward.source,
         port_forward.destination,
-        &wg.endpoint,
+        wg.endpoint,
         source_peer_ip
     );
 

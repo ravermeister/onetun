@@ -19,7 +19,8 @@ use std::{
     time::Duration,
 };
 
-const MAX_PACKET: usize = 65536;
+// const MAX_PACKET: usize = 65536;
+const MAX_PACKET: usize = 262144;
 
 /// A virtual interface for proxying Layer 7 data to Layer 3 packets, and vice versa.
 pub struct TcpVirtualInterface {

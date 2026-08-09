@@ -20,8 +20,8 @@ use std::{
 };
 
 // const MAX_PACKET: usize = 65536;
-// ravermeister, increase to 2MB
-const MAX_PACKET: usize = 2097152;
+// ravermeister, increase to 1MB
+const MAX_PACKET: usize = 1048576;
 
 /// A virtual interface for proxying Layer 7 data to Layer 3 packets, and vice versa.
 pub struct TcpVirtualInterface {

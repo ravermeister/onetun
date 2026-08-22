@@ -20,7 +20,7 @@ rand = "0.10"
 nom = "8"
 async-trait = "0.1"
 priority-queue = "2.7"
-smoltcp = { version = "0.13", default-features = false, features = [
+smoltcp = { version = "0.14", default-features = false, features = [
     "std",
     "log",
     "medium-ip",

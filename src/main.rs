@@ -30,10 +30,10 @@ fn main() -> anyhow::Result<()> {
 fn init_logger(config: &onetun::config::Config) -> anyhow::Result<()> {
     use anyhow::Context;
 
-    let mut builder = pretty_env_logger::formatted_timed_builder();
+    let mut builder = env_logger::Builder::new();
     builder.parse_filters(&config.log);
-    // Default target for the builder is Stdout; non-error messages will go there.
-    builder.target(pretty_env_logger::env_logger::Target::Stdout);
+    // Default target for the builder is Stderr; non-error messages should go to stdout.
+    builder.target(env_logger::Target::Stdout);
 
     // Use a custom formatter that writes ERROR records directly to stderr
     // while other levels are formatted into the builder's buffer (which goes to stdout).

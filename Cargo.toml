@@ -35,8 +35,10 @@ base64 = "0.23"
 # forward boringtuns tracing events to log
 tracing = { version = "0.1", default-features = false, features = ["log"] }
 
-# Human-friendly UTC timestamps for logging
-chrono = "0.4"
+# Human-friendly UTC timestamps for logging (bin-only).
+# Only `Utc::now()` is used, so the timezone database ("clock" feature, which pulls in
+# iana-time-zone/windows-link) and the wasm/oldtime features are not needed.
+chrono = { version = "0.4", default-features = false, features = ["now"], optional = true }
 
 # bin-only dependencies
 clap = { version = "4.6.1", default-features = false, features = ["suggestions", "std", "env", "help", "wrap_help"], optional = true }
@@ -48,7 +50,7 @@ async-recursion = "1.1"
 [features]
 pcap = []
 default = ["bin"]
-bin = ["clap", "env_logger", "pcap", "tokio/rt-multi-thread"]
+bin = ["clap", "env_logger", "chrono", "pcap", "tokio/rt-multi-thread"]
 
 [lib]
 name = "onetun"

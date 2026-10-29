@@ -211,20 +211,18 @@ impl UdpPortPool {
             })
             .context("Virtual port pool is exhausted")?;
 
-        if let Some(old_peer_addr) = inner.peer_addr_by_port.get(&port).copied() {
-            if old_peer_addr != peer_addr {
-                inner.port_by_peer_addr.remove(&old_peer_addr);
-                let old_peer_ip = old_peer_addr.ip();
-                let remove_peer_usage =
-                    if let Some(usage) = inner.peer_port_usage.get_mut(&old_peer_ip) {
-                        usage.remove(&port);
-                        usage.is_empty()
-                    } else {
-                        false
-                    };
-                if remove_peer_usage {
-                    inner.peer_port_usage.remove(&old_peer_ip);
-                }
+        if let Some(old_peer_addr) = inner.peer_addr_by_port.get(&port).copied() && old_peer_addr != peer_addr {
+            inner.port_by_peer_addr.remove(&old_peer_addr);
+            let old_peer_ip = old_peer_addr.ip();
+            let remove_peer_usage =
+                if let Some(usage) = inner.peer_port_usage.get_mut(&old_peer_ip) {
+                    usage.remove(&port);
+                    usage.is_empty()
+                } else {
+                    false
+                };
+            if remove_peer_usage {
+                inner.peer_port_usage.remove(&old_peer_ip);
             }
         }
 

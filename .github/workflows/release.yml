@@ -46,11 +46,17 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
-          images: ravermeister/onetun
+          images: ravermeister/tunone
+          tags: |
+            type=semver,pattern={{raw}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc

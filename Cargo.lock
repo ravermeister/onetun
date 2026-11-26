@@ -678,29 +678,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
-name = "onetun"
-version = "0.3.11"
-dependencies = [
- "anyhow",
- "async-recursion",
- "async-trait",
- "base64 0.23.1",
- "boringtun",
- "bytes",
- "chrono",
- "clap",
- "env_logger",
- "futures",
- "log",
- "nom",
- "priority-queue",
- "rand",
- "smoltcp",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "opaque-debug"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1098,6 +1075,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db97caf9d906fbde555dd62fa95ddba9eecfd14cb388e4f491a66d74cd5fb79a"
 dependencies = [
  "once_cell",
+]
+
+[[package]]
+name = "tunone"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "base64 0.23.1",
+ "boringtun",
+ "bytes",
+ "chrono",
+ "clap",
+ "env_logger",
+ "futures",
+ "log",
+ "nom",
+ "priority-queue",
+ "rand",
+ "smoltcp",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

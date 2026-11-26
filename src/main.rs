@@ -6,7 +6,7 @@ extern crate log;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     use anyhow::Context;
-    use onetun::{config::Config, events::Bus};
+    use tunone::{config::Config, events::Bus};
 
     let config = Config::from_args().context("Configuration has errors")?;
     init_logger(&config)?;
@@ -16,7 +16,7 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let bus = Bus::default();
-    onetun::start_tunnels(config, bus).await?;
+    tunone::start_tunnels(config, bus).await?;
 
     futures::future::pending().await
 }
@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 #[cfg(feature = "bin")]
-fn init_logger(config: &onetun::config::Config) -> anyhow::Result<()> {
+fn init_logger(config: &tunone::config::Config) -> anyhow::Result<()> {
     use anyhow::Context;
 
     let mut builder = env_logger::Builder::new();

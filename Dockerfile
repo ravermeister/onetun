@@ -19,9 +19,9 @@ RUN apt-get update \
     && apt-get install dumb-init -y \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=cargo-build /usr/src/onetun/target/release/onetun /usr/local/bin/onetun
+COPY --from=cargo-build /usr/src/onetun/target/release/tunone /usr/local/bin/tunone
 
 # Run as non-root
 USER 1000
 
-ENTRYPOINT ["dumb-init", "/usr/local/bin/onetun"]
+ENTRYPOINT ["dumb-init", "/usr/local/bin/tunone"]

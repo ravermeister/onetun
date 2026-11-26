@@ -1,6 +1,6 @@
 [package]
 name = "tunone"
-version = "0.3.11"
+version = "0.0.1"
 edition = "2026"
 license = "MIT"
 description = "A cross-platform, user-space WireGuard port-forwarder that requires no system network configurations."

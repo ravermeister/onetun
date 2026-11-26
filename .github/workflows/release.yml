@@ -2,7 +2,7 @@ name: release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*'
 
 permissions:
   contents: write
@@ -31,8 +31,8 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
 
           sed -i "0,/^version = .*/s//version = \"${VERSION}\"/" Cargo.toml
-          cargo update --package tunone
-          cargo publish --locked
+          cargo check
+          cargo publish --locked --allow-dirty
   docker-push:
     name: docker-push
     runs-on: ubuntu-latest

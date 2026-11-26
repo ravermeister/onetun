@@ -1,7 +1,7 @@
 [package]
-name = "onetun"
+name = "tunone"
 version = "0.3.11"
-edition = "2024"
+edition = "2026"
 license = "MIT"
 description = "A cross-platform, user-space WireGuard port-forwarder that requires no system network configurations."
 authors = ["Aram Peres <aram.peres@gmail.com>", "Jonny Rimkus <jonny@rimkus.it>"]
@@ -53,7 +53,7 @@ default = ["bin"]
 bin = ["clap", "env_logger", "chrono", "pcap", "tokio/rt-multi-thread"]
 
 [lib]
-name = "onetun"
+name = "tunone"
 
 [profile.release]
 opt-level = 2
@@ -70,7 +70,7 @@ inherits = "release"
 opt-level = 3
 codegen-units = 4
 # Use this profile on systems with abundant RAM:
-# cargo build --release -p onetun --profile release-fast
+# cargo build --release -p tunone --profile release-fast
 # OR: CARGO_PROFILE_RELEASE_FAST_OPT_LEVEL=3 cargo build --release
 
 [profile.release-minimal]
@@ -78,5 +78,5 @@ inherits = "release"
 opt-level = 1
 codegen-units = 256
 # Use this profile on systems with severe RAM constraints (< 2GB):
-# cargo build -p onetun --profile release-minimal
+# cargo build -p tunone --profile release-minimal
 

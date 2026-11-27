@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload Linux binary for Docker build
         if: startsWith(matrix.build, 'linux-')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docker-assets-${{ matrix.build }}
           path: ci/assets/tunone-${{ matrix.build }}

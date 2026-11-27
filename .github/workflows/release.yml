@@ -35,12 +35,21 @@ jobs:
           cargo publish --locked --allow-dirty
   docker-push:
     name: docker-push
+    needs: [build-release]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
+          
+      - name: Download Linux binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: docker-assets-linux-*
+          path: ci/assets
+          merge-multiple: true
+      
       - name: Log in to Docker Hub
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550
         with:

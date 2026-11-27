@@ -31,7 +31,7 @@ fn init_logger(config: &tunone::config::Config) -> anyhow::Result<()> {
     use anyhow::Context;
 
     let mut builder = env_logger::Builder::new();
-    builder.parse_filters(&config.log);
+    builder.parse_filters(config.log.as_str());
     // Default target for the builder is Stderr; non-error messages should go to stdout.
     builder.target(env_logger::Target::Stdout);
 

@@ -19,6 +19,9 @@ procedure.
   unset, and updates it only after publishing succeeds.
 - Generated release notes are posted on the merged PR and used for the GitHub
   release. Keep release notes concise and understandable.
+- The crate publishing job updates the checked-out manifest/lockfile to the
+  release version and intentionally uses `cargo publish --locked --allow-dirty`;
+  these generated version changes are not committed back to the release branch.
 - Feature PRs may be opened as drafts while work is in progress; convert them
   to ready for review once they are reviewable and CI passes.
 - Check consistency among `Cargo.toml`, `Cargo.lock`, the requested semantic

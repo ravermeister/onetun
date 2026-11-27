@@ -21,6 +21,12 @@ description: Prepares and validates tunone crate, binary, GitHub, and Docker rel
    assets, and/or Docker Hub. Never claim a remote action succeeded based only
    on local validation.
 
+The automated crate publishing step updates the checked-out manifest to the
+release version and lets Cargo update `Cargo.lock` before publishing. It
+intentionally uses `cargo publish --locked --allow-dirty` for those generated
+version changes; do not remove `--allow-dirty` unless the release flow first
+commits the version update.
+
 Do not push tags, call `cargo publish`, create a GitHub release, or push
 containers unless the user explicitly authorizes that exact external action.
 Keep tokens and secrets out of output and repository files.

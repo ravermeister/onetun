@@ -207,7 +207,7 @@ jobs:
           set -euo pipefail
           sed -i "0,/^version = .*/s//version = \"${VERSION}\"/" Cargo.toml
           cargo check
-          cargo publish --locked
+          cargo publish --locked --allow-dirty
 
   build_release:
     name: Build ${{ matrix.build }}

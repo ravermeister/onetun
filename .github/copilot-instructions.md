@@ -8,6 +8,27 @@ TCP/IP stack to forward local TCP and experimental UDP traffic to WireGuard
 peers, without requiring local root access or configuring system interfaces.
 The Rust package uses edition 2024 and Tokio; stable Rust is used by CI.
 
+## Persistent preferences and learning
+
+- At the start of every task, apply these repository instructions and read
+  `.copilot/DECISIONS.md` for durable user preferences and project decisions.
+  Relevant custom agents and skills are available under `.github/agents/` and
+  `.github/skills/`; use their guidance when working in those areas.
+- Treat explicit user corrections and decisions as authoritative for the
+  current task. If a preference or decision changes, use the latest explicit
+  direction and update the decision note when it is reusable in future tasks.
+- Learn only from clear, reusable decisions, confirmed corrections, or
+  established project conventions. Do not infer a preference from a one-off
+  request or record speculative conclusions.
+- When a durable decision changes, update `.copilot/DECISIONS.md` and any
+  directly affected instructions, agents, or skills so they remain consistent.
+  Keep the note concise and remove superseded guidance.
+- Do not save full chat transcripts, private or sensitive user content, or
+  secrets. Copilot customizations do not provide automatic access to or
+  recording of conversations outside the current available context.
+- Do not edit customization files for every prompt. Make a persistent update
+  only when a clear, reusable preference, decision, or correction warrants it.
+
 ## Architecture map
 
 - `src/config.rs`: CLI and tunnel configuration parsing and validation.

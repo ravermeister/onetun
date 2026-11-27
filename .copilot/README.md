@@ -12,6 +12,11 @@ The skills are tailored to tunone and follow the Agent Skills format. The
 curated directory at [ai-skills.io](https://ai-skills.io/) informed the
 specialist-skill approach; no third-party skill content or scripts were copied.
 
+Durable preferences and project decisions are recorded in
+[DECISIONS.md](DECISIONS.md). Copilot should consult it for each task and
+update it only when a clear, reusable decision changes; full chat transcripts
+are not stored.
+
 References:
 
 - [GitHub Copilot customization cheat sheet](https://docs.github.com/en/copilot/reference/customization-cheat-sheet)

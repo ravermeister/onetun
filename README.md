@@ -4,7 +4,7 @@
 
 A cross-platform, user-space WireGuard port-forwarder that requires **no root-access or system network configurations**.
 
-[![crates.io](https://img.shields.io/crates/v/onetun.svg)](https://crates.io/crates/onetun)
+[![crates.io](https://img.shields.io/crates/v/tunone.svg)](https://crates.io/crates/tunone)
 [![MIT licensed](https://img.shields.io/crates/l/onetun.svg)](./LICENSE)
 [![Build status](https://github.com/ravermeister/onetun/actions/workflows/build.yml/badge.svg)](https://github.com/ravermeister/onetun/actions)
 [![Latest Release](https://img.shields.io/github/v/tag/ravermeister/onetun?label=release)](https://github.com/ravermeister/onetun/releases/latest)

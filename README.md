@@ -129,7 +129,7 @@ INFO  tunone::tunnel > Tunneling TCP [127.0.0.1:8081]->[192.168.4.4:8081] (via [
 #### Maximum number of tunnels
 
 `smoltcp` imposes a compile-time limit on the number of IP addresses assigned to an interface. **tunone** sets this
-limit to **8** (including its own peer IP), so it supports up to **7 unique destination IPs per protocol** (TCP and UDP).
+limit to **12** (including its own peer IP), so it supports up to **11 unique destination IPs per protocol** (TCP and UDP).
 This limit is enabled through a smoltcp Cargo feature and therefore also applies when installing with `cargo install`.
 
 Should you need more unique destination IPs, increase `SMOLTCP_IFACE_MAX_ADDR_COUNT` and recompile **tunone**. For example:

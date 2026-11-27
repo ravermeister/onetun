@@ -203,6 +203,11 @@ impl VirtualInterfacePoll for TcpVirtualInterface {
                 event = endpoint.recv() => {
                     match event {
                         Event::ClientConnectionInitiated(port_forward, virtual_port) => {
+                            trace!(
+                                "TCP virtual interface received connection for {} to {}",
+                                virtual_port,
+                                port_forward.destination
+                            );
                             let client_socket = TcpVirtualInterface::new_client_socket()?;
                             let client_handle = self.sockets.add(client_socket);
 
@@ -235,6 +240,11 @@ impl VirtualInterfacePoll for TcpVirtualInterface {
                         }
                         Event::LocalData(_, virtual_port, data) if send_queue.contains_key(&virtual_port) => {
                             if let Some(send_queue) = send_queue.get_mut(&virtual_port) {
+                                trace!(
+                                    "TCP virtual interface queued {} bytes for {}",
+                                    data.len(),
+                                    virtual_port
+                                );
                                 send_queue.push_back(data);
                                 next_poll = None;
                             }

@@ -1,4 +1,4 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -31,13 +31,13 @@ async fn tcp_forward_completes_wireguard_handshake_and_receives_peer_response() 
     let peer = Tunn::new(server_private, client_public, None, None, 0, None);
     let peer_task = tokio::spawn(run_peer(peer_socket, peer));
 
-    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let listener = TcpListener::bind("[::]:0").await.unwrap();
     let local_port = listener.local_addr().unwrap().port();
     drop(listener);
 
     let config = Config {
         port_forwards: vec![PortForwardConfig {
-            source: SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, local_port)),
+            source: SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, local_port, 0, 0)),
             destination: SocketAddr::V4(SocketAddrV4::new(SERVER_IP, SERVER_PORT)),
             protocol: PortProtocol::Tcp,
             remote: false,
@@ -60,7 +60,7 @@ async fn tcp_forward_completes_wireguard_handshake_and_receives_peer_response() 
 
     let mut client = tokio::time::timeout(Duration::from_secs(3), async {
         loop {
-            match TcpStream::connect(("127.0.0.1", local_port)).await {
+            match TcpStream::connect((Ipv6Addr::LOCALHOST, local_port)).await {
                 Ok(stream) => break stream,
                 Err(_) => tokio::time::sleep(Duration::from_millis(10)).await,
             }

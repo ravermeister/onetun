@@ -1,126 +1,234 @@
-name: release
+# $schema: https://json.schemastore.org/github-workflow.json
+name: Release
+
 on:
-  push:
-    tags:
-      - 'v*'
+  pull_request:
+    types: [closed]
+    branches: [main]
 
 permissions:
+  actions: write
   contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  publish-crate:
-    name: publish-crate
+  prepare-release:
+    name: Prepare release
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+      major: ${{ steps.version.outputs.major }}
+      minor: ${{ steps.version.outputs.minor }}
+      release_sha: ${{ steps.version.outputs.release_sha }}
+      previous_tag: ${{ steps.version.outputs.previous_tag }}
+      pr_number: ${{ steps.version.outputs.pr_number }}
     steps:
-      - name: Checkout repository
+      - name: Checkout merged sources
         uses: actions/checkout@v7
         with:
-          fetch-depth: 1
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
 
-      - name: Validate release tag
+      - name: Calculate version and create tag
+        id: version
+        shell: bash
+        env:
+          CURRENT_RELEASE_VERSION: ${{ vars.RELEASE_VERSION }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --force --tags origin
+
+          existing_tag=""
+          while IFS= read -r candidate; do
+            if git cat-file -p "refs/tags/${candidate}" 2>/dev/null |
+              grep -Fxq "Release-PR: #${PR_NUMBER}"; then
+              existing_tag="$candidate"
+              break
+            fi
+          done < <(git tag --list 'v[0-9]*' --sort=-version:refname)
+
+          if [[ -n "$existing_tag" ]]; then
+            tag="$existing_tag"
+            version="${tag#v}"
+            release_sha="$(git rev-list -n 1 "$tag")"
+          else
+            current_version="$CURRENT_RELEASE_VERSION"
+            if [[ -z "$current_version" ]]; then
+              latest_tag="$(git tag --list 'v[0-9]*' --sort=-version:refname |
+                grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
+              if [[ -n "$latest_tag" ]]; then
+                current_version="${latest_tag#v}"
+              else
+                current_version="$(sed -n '0,/^version = "\([0-9.]*\)"$/s//\1/p' Cargo.toml)"
+              fi
+            fi
+
+            version="$(CURRENT_VERSION="$current_version" PR_TITLE="$PR_TITLE" PR_BODY="$PR_BODY" python3 - <<'PY'
+          import os
+          import re
+
+          current = os.environ["CURRENT_VERSION"]
+          match = re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", current)
+          if not match:
+              raise SystemExit(f"RELEASE_VERSION must be a semantic version without a 'v' prefix, got: {current!r}")
+
+          major, minor, patch = map(int, match.groups())
+          title = os.environ["PR_TITLE"]
+          body = os.environ.get("PR_BODY", "")
+          if re.match(r"^[A-Za-z0-9-]+(?:\([^)]*\))?!:", title) or re.search(
+              r"(?im)^\s*BREAKING[ -]CHANGE:", body
+          ):
+              major, minor, patch = major + 1, 0, 0
+          elif re.match(r"^feat(?:\([^)]*\))?:", title):
+              minor, patch = minor + 1, 0
+          else:
+              patch += 1
+
+          print(f"{major}.{minor}.{patch}")
+          PY
+          )"
+            tag="v${version}"
+            release_sha="$MERGE_SHA"
+
+            if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+              echo "::error::Tag ${tag} already exists for a different merged pull request."
+              exit 1
+            fi
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$tag" "$release_sha" \
+              -m "Release ${tag}" \
+              -m "Release-PR: #${PR_NUMBER}"
+            git push origin "refs/tags/${tag}"
+          fi
+
+          previous_tag=""
+          while IFS= read -r candidate; do
+            [[ "$candidate" == "$tag" ]] && break
+            if [[ "$candidate" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              previous_tag="$candidate"
+            fi
+          done < <(git tag --list 'v[0-9]*' --sort=version:refname)
+
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "major=${version%%.*}" >> "$GITHUB_OUTPUT"
+          echo "minor=$(cut -d. -f2 <<< "$version")" >> "$GITHUB_OUTPUT"
+          echo "release_sha=${release_sha}" >> "$GITHUB_OUTPUT"
+          echo "previous_tag=${previous_tag}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+
+  create-release:
+    name: Create release and publish notes
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
+          RELEASE_SHA: ${{ needs.prepare-release.outputs.release_sha }}
+          PREVIOUS_TAG: ${{ needs.prepare-release.outputs.previous_tag }}
+          PR_NUMBER: ${{ needs.prepare-release.outputs.pr_number }}
         shell: bash
         run: |
-          [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
-            { echo "Invalid release tag: ${GITHUB_REF_NAME}"; exit 1; }
+          set -euo pipefail
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+              -f tag_name="$TAG" \
+              -f target_commitish="$RELEASE_SHA" \
+              -f previous_tag_name="$PREVIOUS_TAG" \
+              --jq '.body' > release-notes.md
+          else
+            gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+              -f tag_name="$TAG" \
+              -f target_commitish="$RELEASE_SHA" \
+              --jq '.body' > release-notes.md
+          fi
+          if [[ ! -s release-notes.md ]]; then
+            echo "::error::GitHub returned empty release notes for ${TAG}."
+            exit 1
+          fi
+
+          marker="<!-- release-notes:${TAG} -->"
+          if ! gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --paginate --jq '.[].body' | grep -Fq "$marker"; then
+            {
+              echo "$marker"
+              echo "### Release notes for ${TAG}"
+              echo
+              cat release-notes.md
+            } > pull-request-notes.md
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+              --body-file pull-request-notes.md
+          fi
+
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$TAG" \
+              --notes-file release-notes.md \
+              --verify-tag
+          fi
+
+  publish-crate:
+    name: Publish crate
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release sources
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
 
       - name: Set version and publish crate
         shell: bash
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO }}
+          VERSION: ${{ needs.prepare-release.outputs.version }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-
+          set -euo pipefail
           sed -i "0,/^version = .*/s//version = \"${VERSION}\"/" Cargo.toml
           cargo check
-          cargo publish --locked --allow-dirty
-  docker-push:
-    name: docker-push
-    needs: [build-release]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
-          
-      - name: Download Linux binaries
-        uses: actions/download-artifact@v8
-        with:
-          pattern: docker-assets-linux-*
-          path: ci/assets
-          merge-multiple: true
-      
-      - name: Log in to Docker Hub
-        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
-        with:
-          images: ravermeister/tunone
-          tags: |
-            type=semver,pattern={{raw}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  create-release:
-    name: create-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get the release version from the tag
-        run: |
-          echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-          echo "version is: ${GITHUB_REF_NAME}"
-
-      - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          if gh release view "${VERSION}" --repo "${GH_REPO}" >/dev/null 2>&1; then
-            echo "release ${VERSION} already exists"
-          else
-            gh release create "${VERSION}" \
-              --repo "${GH_REPO}" \
-              --title "${VERSION}" \
-              --verify-tag
-          fi
+          cargo publish --locked
 
   build-release:
-    name: build-release
-    needs: [ 'create-release' ]
+    name: Build ${{ matrix.build }}
+    needs: [prepare-release, create-release]
     runs-on: ${{ matrix.os }}
     env:
-      # Emit backtraces on panics.
       RUST_BACKTRACE: 1
     strategy:
+      fail-fast: false
       matrix:
-        build: [ linux-amd64, linux-arm64, linux-armv7, macos-aarch64, windows ]
+        build: [linux-amd64, linux-arm64, linux-armv7, macos-aarch64, windows]
         include:
           - build: linux-amd64
             os: ubuntu-latest
             rust: stable
             target: x86_64-unknown-linux-musl
             cross: false
-          # Linux ARM targets require cross on GitHub-hosted runners.
           - build: linux-arm64
             os: ubuntu-latest
             rust: stable
             target: aarch64-unknown-linux-musl
             cross: true
-          # Raspberry Pi 32-bit (ARMv7) requires cross on GitHub-hosted runners.
           - build: linux-armv7
             os: ubuntu-latest
             rust: stable
@@ -136,22 +244,22 @@ jobs:
             rust: stable
             target: x86_64-pc-windows-msvc
             cross: false
-
     steps:
-      - name: Checkout repository
+      - name: Checkout release sources
         uses: actions/checkout@v7
         with:
-          fetch-depth: 1
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
 
       - name: Install packages (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          .github/ci/ubuntu-install-packages
+        run: .github/ci/ubuntu-install-packages
+
       - name: Install packages (macOS)
         if: matrix.os == 'macos-latest'
-        run: |
-          .github/ci/macos-install-packages
+        run: .github/ci/macos-install-packages
+
       - name: Install Rust
+        shell: bash
         run: |
           rustup update ${{ matrix.rust }}
           rustup default ${{ matrix.rust }}
@@ -159,18 +267,20 @@ jobs:
 
       - name: Set release version
         shell: bash
+        env:
+          VERSION: ${{ needs.prepare-release.outputs.version }}
         run: |
-          echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-          echo "version is: ${GITHUB_REF_NAME}"
+          sed -i "0,/^version = .*/s//version = \"${VERSION}\"/" Cargo.toml
+          cargo check
 
       - name: Build onetun binary
         shell: bash
         run: |
           if [ "${{ matrix.cross }}" = "true" ]; then
             cargo install cross --locked
-            cross build --release --target ${{ matrix.target }}
+            cross build --release --locked --target ${{ matrix.target }}
           else
-            cargo build --release --target ${{ matrix.target }}
+            cargo build --release --locked --target ${{ matrix.target }}
           fi
 
       - name: Prepare tunone binary
@@ -179,10 +289,10 @@ jobs:
           mkdir -p ci/assets
           if [ "${{ matrix.build }}" = "windows" ]; then
             cp "target/${{ matrix.target }}/release/tunone.exe" "ci/assets/tunone.exe"
-            echo "ASSET=tunone.exe" >> $GITHUB_ENV
+            echo "ASSET=tunone.exe" >> "$GITHUB_ENV"
           else
             cp "target/${{ matrix.target }}/release/tunone" "ci/assets/tunone-${{ matrix.build }}"
-            echo "ASSET=tunone-${{ matrix.build }}" >> $GITHUB_ENV
+            echo "ASSET=tunone-${{ matrix.build }}" >> "$GITHUB_ENV"
           fi
 
       - name: Upload Linux binary for Docker build
@@ -193,10 +303,71 @@ jobs:
           path: ci/assets/tunone-${{ matrix.build }}
           if-no-files-found: error
 
-      - name: Upload release archive
+      - name: Upload release asset
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
+        shell: bash
+        run: gh release upload "$TAG" "ci/assets/${ASSET}" --repo "$GITHUB_REPOSITORY" --clobber
+
+  docker-push:
+    name: Build and push Docker image
+    needs: [prepare-release, build-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release sources
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
+
+      - name: Download Linux binaries
+        uses: actions/download-artifact@v8
+        with:
+          pattern: docker-assets-linux-*
+          path: ci/assets
+          merge-multiple: true
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
+        with:
+          images: ravermeister/tunone
+          tags: |
+            type=raw,value=${{ needs.prepare-release.outputs.tag }}
+            type=raw,value=${{ needs.prepare-release.outputs.major }}.${{ needs.prepare-release.outputs.minor }}
+            type=raw,value=${{ needs.prepare-release.outputs.major }}
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  update-release-version:
+    name: Update repository release version
+    needs: [prepare-release, publish-crate, create-release, build-release, docker-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Store released version in repository variable
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.prepare-release.outputs.version }}
+          CURRENT_RELEASE_VERSION: ${{ vars.RELEASE_VERSION }}
         shell: bash
         run: |
-          gh release upload "${VERSION}" "ci/assets/${ASSET}" --repo "${GH_REPO}" --clobber
+          set -euo pipefail
+          if [[ -z "$CURRENT_RELEASE_VERSION" ]] ||
+            [[ "$(printf '%s\n' "$CURRENT_RELEASE_VERSION" "$RELEASE_VERSION" | sort -V | tail -n 1)" == "$RELEASE_VERSION" ]]; then
+            gh variable set RELEASE_VERSION \
+              --repo "$GITHUB_REPOSITORY" \
+              --body "$RELEASE_VERSION"
+          fi

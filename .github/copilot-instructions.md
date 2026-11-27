@@ -40,7 +40,9 @@ The Rust package uses edition 2024 and Tokio; stable Rust is used by CI.
 - `src/virtual_device.rs`: packet device connecting the virtual stack and event bus.
 - `tests/wireguard_roundtrip.rs`: localhost WireGuard/TCP integration coverage.
 - `.github/workflows/build.yml`: CI checks, tests, formatting, and Clippy.
-- `.github/workflows/release.yml`: tagged release, crate, binary, and Docker publishing.
+- `.github/workflows/release.yml`: publishes a release after each merged PR to
+  `main`, including the crate, binaries, Docker image, GitHub release, and
+  release notes.
 
 Keep protocol-specific changes in their existing TCP or UDP paths unless there
 is a clear reason to share code. UDP is experimental. Preserve IPv4/IPv6 and
@@ -77,3 +79,22 @@ to a real VPN peer, privileged network configuration, or production secrets.
 - Do not publish crates, push tags, create releases, or push Docker images
   unless the user explicitly requests that external action. Before any release,
   inspect the current workflow and verify the exact version and target.
+
+## Branch, pull request, and release workflow
+
+- Develop features on branches. CI checks and tests pushes and pull requests;
+  open pull requests as drafts while work is in progress and mark them ready
+  when they are reviewable.
+- Use Conventional Commit titles for pull requests: `feat:` increments the
+  minor version, `fix:` and other types increment the patch version, and `!`
+  (for example `feat!:` or `fix(api)!:`) or `BREAKING CHANGE:` in the body
+  increments the major version.
+- A merge into `main` triggers one release: GitHub-generated notes are posted
+  on the pull request and included in the GitHub release; the crate, platform
+  binaries, and Docker image are published.
+- The repository Actions variable `RELEASE_VERSION` stores the most recently
+  released SemVer without a `v` prefix. If it is unset, the release workflow
+  starts from the latest `vX.Y.Z` tag (or the manifest version if no tag
+  exists), then updates the variable after publication succeeds.
+- Release publishing uses the existing `CRATES_IO`, `DOCKER_USERNAME`, and
+  `DOCKER_PASSWORD` repository secrets. Do not expose or copy their values.

@@ -28,7 +28,7 @@ smoltcp = { version = "0.14", default-features = false, features = [
     "proto-ipv6",
     "socket-udp",
     "socket-tcp",
-    "iface-max-addr-count-12",
+    "iface-max-addr-count-8",
 ] }
 bytes = "1"
 base64 = "0.23"

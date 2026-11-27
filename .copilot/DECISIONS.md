@@ -17,8 +17,9 @@ Do not record full chat transcripts, secrets, or sensitive personal content.
 - For Rust IDE diagnostics, verify the relevant Cargo target and feature
   configuration with Cargo before changing code based only on an IDE warning.
 - Develop and test features on branches and pull requests; open in-progress
-  pull requests as drafts. Every pull request merged into `main` triggers a
-  release with concise GitHub-generated notes on both the PR and GitHub release.
+  pull requests as drafts. Every pull request merged into the release branch
+  (`fork/main` in this repository) triggers a release with concise
+  GitHub-generated notes on both the PR and GitHub release.
 - Determine release SemVer from the Conventional Commit PR title: `feat:` is
   minor, `!` or `BREAKING CHANGE:` is major, and other changes are patch.
   Store the latest released version in the repository Actions variable

@@ -5,7 +5,7 @@ RUN apt-get update \
     && apt-get install -y dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ci/assets/ /tmp/assets/
+COPY ./ci/assets/ /tmp/assets/
 RUN case "${TARGETARCH}" in \
       amd64) cp /tmp/assets/tunone-linux-amd64 /usr/local/bin/tunone ;; \
       arm64) cp /tmp/assets/tunone-linux-arm64 /usr/local/bin/tunone ;; \

@@ -67,27 +67,28 @@ jobs:
             version="${tag#v}"
             release_sha="$(git rev-list -n 1 "$tag")"
           else
-            current_version="$CURRENT_RELEASE_VERSION"
-            if [[ -z "$current_version" ]]; then
-              latest_tag="$(git tag --list 'v[0-9]*' --sort=-version:refname |
-                grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
-              if [[ -n "$latest_tag" ]]; then
-                current_version="${latest_tag#v}"
-              else
-                current_version="$(sed -n '0,/^version = "\([0-9.]*\)"$/s//\1/p' Cargo.toml)"
-              fi
-            fi
+            latest_tag="$(git tag --list 'v[0-9]*' --sort=-version:refname |
+              grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
+            manifest_version="$(sed -n '0,/^version = "\([0-9.]*\)"$/s//\1/p' Cargo.toml)"
 
-            version="$(CURRENT_VERSION="$current_version" PR_TITLE="$PR_TITLE" PR_BODY="$PR_BODY" python3 - <<'PY'
+            version="$(CURRENT_RELEASE_VERSION="$CURRENT_RELEASE_VERSION" LATEST_TAG_VERSION="${latest_tag#v}" MANIFEST_VERSION="$manifest_version" PR_TITLE="$PR_TITLE" PR_BODY="$PR_BODY" python3 - <<'PY'
           import os
           import re
 
-          current = os.environ["CURRENT_VERSION"]
-          match = re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", current)
-          if not match:
-              raise SystemExit(f"RELEASE_VERSION must be a semantic version without a 'v' prefix, got: {current!r}")
+          version_pattern = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)")
+          candidates = []
+          for name in ("CURRENT_RELEASE_VERSION", "LATEST_TAG_VERSION", "MANIFEST_VERSION"):
+              value = os.environ.get(name, "")
+              if not value:
+                  continue
+              match = version_pattern.fullmatch(value)
+              if not match:
+                  raise SystemExit(f"{name} must be a semantic version without a 'v' prefix, got: {value!r}")
+              candidates.append((tuple(map(int, match.groups())), value))
+          if not candidates:
+              raise SystemExit("No valid release version found in RELEASE_VERSION, tags, or Cargo.toml.")
 
-          major, minor, patch = map(int, match.groups())
+          (major, minor, patch), _ = max(candidates)
           title = os.environ["PR_TITLE"]
           body = os.environ.get("PR_BODY", "")
           if re.match(r"^[A-Za-z0-9-]+(?:\([^)]*\))?!:", title) or re.search(

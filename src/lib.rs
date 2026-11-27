@@ -75,7 +75,11 @@ pub async fn start_tunnels(config: Config, bus: Bus) -> anyhow::Result<()> {
         // Start TCP Virtual Interface
         let port_forwards = config.port_forwards.clone();
         let iface = TcpVirtualInterface::new(port_forwards, bus, config.source_peer_ip);
-        tokio::spawn(async move { iface.poll_loop(device).await });
+        tokio::spawn(async move {
+            if let Err(e) = iface.poll_loop(device).await {
+                error!("TCP virtual interface failed: {:#}", e);
+            }
+        });
     }
 
     if config
@@ -91,7 +95,11 @@ pub async fn start_tunnels(config: Config, bus: Bus) -> anyhow::Result<()> {
         // Start UDP Virtual Interface
         let port_forwards = config.port_forwards.clone();
         let iface = UdpVirtualInterface::new(port_forwards, bus, config.source_peer_ip);
-        tokio::spawn(async move { iface.poll_loop(device).await });
+        tokio::spawn(async move {
+            if let Err(e) = iface.poll_loop(device).await {
+                error!("UDP virtual interface failed: {:#}", e);
+            }
+        });
     }
 
     {

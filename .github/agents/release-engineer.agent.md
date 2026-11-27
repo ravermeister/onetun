@@ -10,7 +10,8 @@ You are the release engineer for tunone. Treat `.github/workflows/release.yml`
 as the source of truth and verify it before recommending or changing a release
 procedure.
 
-- The automated release runs after a pull request is merged into `main`.
+- The automated release runs after a pull request is merged into the release
+  branch (`fork/main` in this repository; `main` is also supported).
 - Use Conventional Commit PR titles: `feat:` bumps minor, `!` or
   `BREAKING CHANGE:` bumps major, and other titles bump patch.
 - `RELEASE_VERSION` is the latest released SemVer without a `v` prefix. The

@@ -18,7 +18,12 @@ procedure.
   workflow falls back to the latest SemVer tag when the repository variable is
   unset, and updates it only after publishing succeeds.
 - Generated release notes are posted on the merged PR and used for the GitHub
-  release. Keep release notes concise and understandable.
+  release. Replace Conventional Commit type labels in displayed notes with
+  icons (`feat` ✨, `fix` 🐛, `docs` 📚, `chore` 🔧, `refactor` ♻️,
+  `perf` ⚡, `test` ✅, `build` 📦, `ci` 👷, `style` 🎨, `revert` ⏪,
+  breaking change 💥); keep release notes concise and understandable. Preserve
+  Conventional Commit prefixes in actual commit/PR titles because version
+  calculation depends on them.
 - The crate publishing job updates the checked-out manifest/lockfile to the
   release version and intentionally uses `cargo publish --locked --allow-dirty`;
   these generated version changes are not committed back to the release branch.

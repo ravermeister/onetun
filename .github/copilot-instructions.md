@@ -93,6 +93,9 @@ to a real VPN peer, privileged network configuration, or production secrets.
   where that branch is used) triggers one release: GitHub-generated notes are
   posted on the pull request and included in the GitHub release; the crate,
   platform binaries, and Docker image are published.
+- Display Conventional Commit types as Unicode icons in release notes (for
+  example `feat` ✨, `fix` 🐛, and breaking changes 💥). Keep commit and PR
+  titles in Conventional Commit format because they drive SemVer increments.
 - The repository Actions variable `RELEASE_VERSION` stores the most recently
   released SemVer without a `v` prefix. If it is unset, the release workflow
   starts from the latest `vX.Y.Z` tag (or the manifest version if no tag

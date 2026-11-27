@@ -28,6 +28,7 @@ smoltcp = { version = "0.14", default-features = false, features = [
     "proto-ipv6",
     "socket-udp",
     "socket-tcp",
+    "iface-max-addr-count-8",
 ] }
 bytes = "1"
 base64 = "0.23"
@@ -79,4 +80,3 @@ opt-level = 1
 codegen-units = 256
 # Use this profile on systems with severe RAM constraints (< 2GB):
 # cargo build -p tunone --profile release-minimal
-

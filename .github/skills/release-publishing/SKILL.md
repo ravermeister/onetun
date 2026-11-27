@@ -6,13 +6,18 @@ description: Prepares and validates tunone crate, binary, GitHub, and Docker rel
 ## Release readiness
 
 1. Read the current `.github/workflows/release.yml`; it defines the actual
-   release targets and external effects.
-2. Confirm the requested version, `Cargo.toml`/`Cargo.lock` consistency, tag
-   format, package files, release notes, and target matrix.
-3. Run relevant non-publishing checks first, including locked tests and
+   release trigger, version bump rules, release targets, and external effects.
+2. Releases are triggered by merged pull requests to `main`. The PR title uses
+   Conventional Commits: `feat:` means minor, `!` or `BREAKING CHANGE:` means
+   major, and all other changes mean patch. `RELEASE_VERSION` is the latest
+   released SemVer without a `v` prefix; an unset variable falls back to the
+   latest release tag.
+3. Confirm the resulting version, `Cargo.toml`/`Cargo.lock` consistency, tag
+   format, package files, generated release notes, and target matrix.
+4. Run relevant non-publishing checks first, including locked tests and
    `cargo package --locked --list` or `cargo package --locked` where appropriate.
    Verify command options against the installed Cargo version.
-4. Report exactly what publishing steps will affect: crates.io, GitHub release
+5. Report exactly what publishing steps will affect: crates.io, GitHub release
    assets, and/or Docker Hub. Never claim a remote action succeeded based only
    on local validation.
 

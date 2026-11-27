@@ -164,7 +164,7 @@ jobs:
             cargo build --release --target ${{ matrix.target }}
           fi
 
-      - name: Prepare onetun binary
+      - name: Prepare tunone binary
         shell: bash
         run: |
           mkdir -p ci/assets
@@ -175,6 +175,14 @@ jobs:
             cp "target/${{ matrix.target }}/release/tunone" "ci/assets/tunone-${{ matrix.build }}"
             echo "ASSET=tunone-${{ matrix.build }}" >> $GITHUB_ENV
           fi
+
+      - name: Upload Linux binary for Docker build
+        if: startsWith(matrix.build, 'linux-')
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-assets-${{ matrix.build }}
+          path: ci/assets/tunone-${{ matrix.build }}
+          if-no-files-found: error
 
       - name: Upload release archive
         env:

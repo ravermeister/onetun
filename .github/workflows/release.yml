@@ -166,13 +166,47 @@ jobs:
             echo "::error::GitHub returned empty release notes for ${TAG}."
             exit 1
           fi
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          icons = {
+              "feat": "✨",
+              "fix": "🐛",
+              "docs": "📚",
+              "chore": "🔧",
+              "refactor": "♻️",
+              "perf": "⚡",
+              "test": "✅",
+              "build": "📦",
+              "ci": "👷",
+              "style": "🎨",
+              "revert": "⏪",
+          }
+          pattern = re.compile(
+              r"(?<![\w`])(?P<type>feat|fix|docs|chore|refactor|perf|test|build|ci|style|revert)"
+              r"(?:\((?P<scope>[^)]+)\))?(?P<breaking>!)?:\s*",
+              re.IGNORECASE,
+          )
+
+          def replace_type(match):
+              icon = "💥" if match.group("breaking") else icons[match.group("type").lower()]
+              scope = f" ({match.group('scope')})" if match.group("scope") else ""
+              return f"{icon}{scope} "
+
+          notes = Path("release-notes.md")
+          notes.write_text(
+              pattern.sub(replace_type, notes.read_text(encoding="utf-8")),
+              encoding="utf-8",
+          )
+          PY
 
           marker="<!-- release-notes:${TAG} -->"
           if ! gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
             --paginate --jq '.[].body' | grep -Fq "$marker"; then
             {
               echo "$marker"
-              echo "### Release notes for ${TAG}"
+              echo "### 🚀 Release notes for ${TAG}"
               echo
               cat release-notes.md
             } > pull-request-notes.md
@@ -183,7 +217,7 @@ jobs:
           if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create "$TAG" \
               --repo "$GITHUB_REPOSITORY" \
-              --title "$TAG" \
+              --title "🚀 $TAG" \
               --notes-file release-notes.md \
               --verify-tag
           fi

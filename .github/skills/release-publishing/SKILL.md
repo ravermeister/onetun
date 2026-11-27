@@ -27,6 +27,11 @@ intentionally uses `cargo publish --locked --allow-dirty` for those generated
 version changes; do not remove `--allow-dirty` unless the release flow first
 commits the version update.
 
+Release notes replace Conventional Commit type labels with matching icons
+(for example `feat` with ✨, `fix` with 🐛, and breaking changes with 💥).
+Keep the original Conventional Commit prefixes in commit and PR titles so
+automated SemVer calculation continues to work.
+
 Do not push tags, call `cargo publish`, create a GitHub release, or push
 containers unless the user explicitly authorizes that exact external action.
 Keep tokens and secrets out of output and repository files.

@@ -1,27 +1,19 @@
-FROM rust:latest AS cargo-build
+FROM debian:stable-slim
+ARG TARGETARCH
 
-WORKDIR /usr/src/onetun
-COPY Cargo.toml Cargo.toml
-
-# Placeholder to download dependencies and cache them using layering
-RUN mkdir src/
-RUN touch src/lib.rs
-RUN echo "fn main() {println!(\"if you see this, the build broke\")}" > src/main.rs
-RUN cargo build --release
-RUN rm -f target/x86_64-unknown-linux-musl/release/deps/myapp*
-
-# Build the actual project
-COPY . .
-RUN cargo build --release
-
-FROM debian:11-slim
 RUN apt-get update \
-    && apt-get install dumb-init -y \
+    && apt-get install -y dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=cargo-build /usr/src/onetun/target/release/tunone /usr/local/bin/tunone
+COPY ci/assets/ /tmp/assets/
+RUN case "${TARGETARCH}" in \
+      amd64) cp /tmp/onetun-assets/tunone-linux-amd64 /usr/local/bin/tunone ;; \
+      arm64) cp /tmp/onetun-assets/tunone-linux-arm64 /usr/local/bin/tunone ;; \
+      arm)   cp /tmp/onetun-assets/tunone-linux-armv7 /usr/local/bin/tunone ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && chmod 0755 /usr/local/bin/tunone \
+    && rm -rf /tmp/assets
 
-# Run as non-root
 USER 1000
-
 ENTRYPOINT ["dumb-init", "/usr/local/bin/tunone"]

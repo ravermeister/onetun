@@ -274,7 +274,7 @@ jobs:
           sed -i "0,/^version = .*/s//version = \"${VERSION}\"/" Cargo.toml
           cargo check
 
-      - name: Build onetun binary
+      - name: Build tunone binary
         shell: bash
         run: |
           if [ "${{ matrix.cross }}" = "true" ]; then

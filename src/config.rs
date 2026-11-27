@@ -43,7 +43,7 @@ impl Config {
 
         let mut warnings = vec![];
 
-        let matches = Command::new("onetun")
+        let matches = Command::new("tunone")
             .author("Aram Peres <aram.peres@gmail.com>")
             .version(env!("CARGO_PKG_VERSION"))
             .args(&[

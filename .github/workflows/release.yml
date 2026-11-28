@@ -252,6 +252,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+#        build: [linux-amd64, linux-arm64, linux-armv7, macos-aarch64, windows]
         build: [linux-amd64, linux-arm64, linux-armv7, windows]
         include:
           - build: linux-amd64
@@ -269,11 +270,11 @@ jobs:
             rust: stable
             target: armv7-unknown-linux-musleabihf
             cross: true
-          - build: macos-aarch64
-            os: macos-latest
-            rust: stable
-            target: aarch64-apple-darwin
-            cross: false
+#          - build: macos-aarch64
+#            os: macos-latest
+#            rust: stable
+#            target: aarch64-apple-darwin
+#            cross: false
           - build: windows
             os: windows-latest
             rust: stable

@@ -252,7 +252,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build: [linux-amd64, linux-arm64, linux-armv7, macos-aarch64, windows]
+        build: [linux-amd64, linux-arm64, linux-armv7, windows]
         include:
           - build: linux-amd64
             os: ubuntu-latest
